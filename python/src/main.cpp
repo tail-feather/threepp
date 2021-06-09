@@ -6,7 +6,7 @@
 #include "./math/Quaternion.h"
 
 PYBIND11_MODULE(__three, module) {
-  init_math_Vector3<double>(module);
-  init_math_Matrix4<double>(module);
-  init_math_Quaternion<double>(module);
+    init_math_Vector3<double>(module);
+    init_math_Matrix4<double>(module);
+    init_math_Quaternion<double>(module);
 }
