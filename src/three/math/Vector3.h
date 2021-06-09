@@ -25,27 +25,25 @@ namespace three {
 template <typename T>
 class Vector3 {
 public:
-    Vector3(T x = 0, T y = 0, T z = 0)
+    constexpr Vector3(T x = 0, T y = 0, T z = 0)
         : x(x)
         , y(y)
         , z(z)
-        , _vector()
     {}
-    Vector3(const Vector3<T> &copy)
+    constexpr Vector3(const Vector3<T> &copy)
         : x(copy.x)
         , y(copy.y)
         , z(copy.z)
-        , _vector()
     {}
-    Vector3 &operator =(const Vector3<T> &rhs) {
+    constexpr Vector3 &operator =(const Vector3<T> &rhs) {
         this->x = rhs.x;
         this->y = rhs.y;
         this->z = rhs.z;
         return *this;
     }
     // use default
-    Vector3(Vector3<T> &&move) = default;
-    Vector3 &operator =(Vector3<T> &&rhs) = default;
+    constexpr Vector3(Vector3<T> &&move) = default;
+    constexpr Vector3 &operator =(Vector3<T> &&rhs) = default;
 
     Vector3<T> &set(T x, T y, T z) {
         this->x = x;
@@ -183,13 +181,15 @@ public:
 
 #if 0
     Vector3<T> &applyEuler(const Euler<T> &euler) {
-        return this->applyQuaternion(_quaternion.setFromEuler(euler));
+        return this->applyQuaternion(Quaternion<T>().setFromEuler(euler));
     }
+#endif
 
     Vector3<T> &applyAxisAngle(const Vector3<T> &axis, T angle) {
-        return this->applyQuaternion(_quaternion.setFromAxisAngle(axis, angle));
+        return this->applyQuaternion(Quaternion<T>().setFromAxisAngle(axis, angle));
     }
 
+#if 0
     Vector3<T> &applyMatrix3(const Matrix3<T> &m) {
         const auto x = this->x, y = this->y, z = this->z;
         const auto &e = m.elements;
@@ -249,18 +249,16 @@ public:
     }
 #endif
 
-#if 0
     Vector3<T> &transformDirection(const Matrix4<T> &m) {
         const auto x = this->x, y = this->y, z = this->z;
         const auto &e = m.elements;
 
         this->x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ] * z;
-        this->x = e[ 1 ] * x + e[ 5 ] * y + e[ 9 ] * z;
-        this->x = e[ 2 ] * x + e[ 6 ] * y + e[ 10 ] * z;
+        this->y = e[ 1 ] * x + e[ 5 ] * y + e[ 9 ] * z;
+        this->z = e[ 2 ] * x + e[ 6 ] * y + e[ 10 ] * z;
 
         return this->normalize();
     }
-#endif
 
     Vector3<T> &divide(const Vector3<T> &v) {
         this->x /= v.x;
@@ -408,17 +406,15 @@ public:
     }
 
     Vector3<T> &projectOnPlane(const Vector3<T> &planeNormal) {
-        _init_cache();
-        _vector->copy(*this).projectOnVector(planeNormal);
+        auto _vector = this->clone().projectOnVector(planeNormal);
 
-        return this->sub(*_vector);
+        return this->sub(_vector);
     }
 
     Vector3<T> &reflect(const Vector3<T> &normal) {
-        _init_cache();
         // reflect incident vector off plane orthogonal to normal
         // normal is assumed to have unit length
-        return this->sub(_vector->copy(normal).multiplyScalar(2 * this->dot(normal)));
+        return this->sub(normal.clone().multiplyScalar(2 * this->dot(normal)));
     }
 
     T angleTo(const Vector3<T> &v) const {
@@ -524,7 +520,7 @@ public:
 
     template <typename V>
     V &toArray(V &array, int offset = 0) const {
-        assert(array.size() >= offset + 3);
+        assert(array.size() >= static_cast<std::size_t>(offset + 3));
         array[ offset ] = this->x;
         array[ offset + 1 ] = this->y;
         array[ offset + 2 ] = this->z;
@@ -560,17 +556,6 @@ public:
 public:
     T x, y, z;
 
-private:
-    std::unique_ptr<Vector3<T>> _vector;
-    void _init_cache() {
-        if ( ! _vector ) {
-            return;
-        }
-        _vector = std::make_unique<Vector3<T>>();
-    }
-#if 0
-    Quaternion _quaternion;
-#endif
 };
 
 }  // namespace three
