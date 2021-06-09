@@ -1,0 +1,20 @@
+name: threepp test
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup ppa:mhier/libboost-latest
+      run: |
+        sudo apt-get install software-properties-common -y
+        sudo add-apt-repository ppa:mhier/libboost-latest -y
+    - name: setup build tools
+      run: |
+        sudo apt-get install libboost1.74-dev -y
+    - name: build & run test
+      run: |
+        cd test
+        make

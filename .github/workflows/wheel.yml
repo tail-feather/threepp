@@ -1,0 +1,21 @@
+name: threepp python wheel
+
+on: [push]
+
+jobs:
+  wheel:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build wheel
+      run: |
+        cd python
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install -r requirements-ci.txt
+        CC=gcc-10 CXX=g++-10 python setup.py bdist_wheel
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ubuntu-wheel
+        path: python/dist/
